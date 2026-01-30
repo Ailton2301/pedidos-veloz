@@ -1,0 +1,48 @@
+name: CI/CD - Pedidos Veloz
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+
+env:
+  REGISTRY: docker.io
+  IMAGE_NAMESPACE: ailton2301
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Login Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build e Push - Pedidos
+        uses: docker/build-push-action@v5
+        with:
+          context: ./pedidos
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/pedidos:latest
+
+      - name: Build e Push - Estoque
+        uses: docker/build-push-action@v5
+        with:
+          context: ./estoque
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/estoque:latest
+
+      - name: Build e Push - Pagamentos
+        uses: docker/build-push-action@v5
+        with:
+          context: ./pagamentos
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/pagamentos:latest
