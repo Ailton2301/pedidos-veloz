@@ -72,30 +72,50 @@ Cada serviço é stateless, conforme os princípios do **12-Factor App**, e se c
 
 ## 6. Estrutura do Projeto
 
+A estrutura abaixo representa **exatamente** a organização atual do repositório, incluindo pipeline CI/CD, infraestrutura como código (Terraform), Kubernetes e microserviços.
+
 ```
 pedidos-veloz/
 │
-├── docker-compose.yml
-├── pedidos/
-│   ├── Dockerfile
-│   ├── app.py
-│   └── requirements.txt
-├── estoque/
-│   ├── Dockerfile
-│   ├── app.py
-│   └── requirements.txt
-├── pagamentos/
-│   ├── Dockerfile
-│   ├── app.py
-│   └── requirements.txt
-├── k8s/
-│   ├── pedidos-deployment.yaml
-│   ├── pedidos-service.yaml
-│   ├── estoque-deployment.yaml
-│   ├── estoque-service.yaml
-│   ├── pagamentos-deployment.yaml
-│   └── pagamentos-service.yaml
-└── README.md
+├── .github/
+│   └── workflows/
+│       └── ci-cd.yml            # Pipeline de CI/CD (GitHub Actions)
+│
+├── infra/                       # Infraestrutura como Código (Terraform)
+│   ├── main.tf
+│   ├── variables.tf
+│   ├── outputs.tf
+│   └── README.md
+│
+├── k8s/                         # Manifests Kubernetes
+│   ├── namespace.yaml
+│   ├── configmap.yaml
+│   ├── secrets.yaml
+│   ├── hpa/
+│   │   └── pedidos-hpa.yaml
+│   ├── pedidos/
+│   │   ├── deployment.yaml
+│   │   └── service.yaml
+│   └── postgres/
+│       ├── deployment.yaml
+│       └── service.yaml
+│
+├── services/                    # Microserviços da aplicação
+│   ├── pedidos/
+│   │   ├── app.py
+│   │   ├── Dockerfile
+│   │   └── requirements.txt
+│   ├── estoque/
+│   │   ├── app.py
+│   │   ├── Dockerfile
+│   │   └── requirements.txt
+│   └── pagamentos/
+│       ├── app.py
+│       ├── Dockerfile
+│       └── requirements.txt
+│
+├── docker-compose.yml            # Ambiente local padronizado
+└── README.md                    # Documentação principal
 ```
 
 ---
@@ -132,10 +152,50 @@ Essa estrutura permite escalabilidade, isolamento e gerenciamento centralizado d
 
 ## 9. Estratégias de Deploy e Escalabilidade
 
-* **Deploy**: estratégia Rolling Update (padrão do Kubernetes), reduzindo indisponibilidade
-* **Escalabilidade**: conceito preparado para uso de HPA, com base em métricas de CPU/memória
+* **Deploy**: estratégia Rolling Update (padrão do Kubernetes), reduzindo indisponibilidade durante atualizações
+* **Escalabilidade**: conceito preparado para uso de HPA (Horizontal Pod Autoscaler), com base em métricas de CPU/memória
 
 ---
+
+## 10. Segurança da Aplicação e da Infraestrutura
+
+A segurança foi considerada desde o desenvolvimento até a execução em produção, seguindo boas práticas de ambientes cloud-native.
+
+### 10.1 Segurança em Containers
+
+* Uso de imagens base oficiais e enxutas
+* Containers executados como **usuário não-root** (boa prática recomendada pelo Docker)
+* Cada microserviço isolado em seu próprio container
+* Redução da superfície de ataque ao conter apenas dependências necessárias
+
+### 10.2 Segurança no Kubernetes
+
+* Isolamento de serviços por meio de **Pods** e **Services**
+* Possibilidade de aplicação de **Pod Security Admission** (baseline), restringindo privilégios elevados
+* Uso de **readiness e liveness probes** para evitar que containers defeituosos recebam tráfego
+
+### 10.3 Configurações e Segredos
+
+* Variáveis de ambiente separadas do código-fonte
+* Conceito preparado para uso de **ConfigMaps** (configurações não sensíveis)
+* Conceito preparado para uso de **Secrets** (credenciais e dados sensíveis)
+
+Essa abordagem reduz riscos de vazamento de informações sensíveis e melhora a governança do ambiente.
+
+---
+
+## 11. Observabilidade (Proposta)
+
+A observabilidade pode ser implementada com:
+
+* Métricas: Prometheus
+* Visualização: Grafana
+* Logs: stdout/stderr (padrão cloud-native)
+* Tracing distribuído: OpenTelemetry (proposta conceitual)
+
+---
+
+## 12. Conclusão
 
 ## 10. Observabilidade (Proposta)
 
@@ -154,4 +214,4 @@ O projeto **Pedidos Veloz** demonstra, de forma integrada, a aplicação de conc
 
 ---
 
-📌 *Projeto desenvolvido para fins acadêmicos – Arquitetura Cloud
+📌 *Projeto desenvolvido para fins acadêmicos – Arquitetura Cloud DevOps.*
